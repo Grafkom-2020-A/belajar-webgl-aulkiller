@@ -4,7 +4,7 @@ function main() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  var asrat = 9/16;
+  var asrat = canvas.height/canvas.width;
   var gl = canvas.getContext("webgl");
 
   // Definisi verteks-verteks pada segitiga
