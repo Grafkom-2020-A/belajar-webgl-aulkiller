@@ -7,10 +7,6 @@ function main() {
   var asrat = canvas.height/canvas.width;
   var gl = canvas.getContext("webgl");
 
-  // Definisi verteks-verteks pada segitiga
-  /**
-   * A (-0.5, 0.5); B (-0.5, -0.5); C (0.5, -0.5); D (0.5, 0.5)
-   */
   var vertices = [
     -0.5*asrat, 0.5, 1.0, 0.0, 0.0,      // Titik A 
     -0.5*asrat, -0.5, 1.0, 0.0, 0.0,     // Titik B
@@ -63,13 +59,45 @@ function main() {
   gl.enableVertexAttribArray(aPosition);
   gl.enableVertexAttribArray(aColor);
 
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  // gl.viewport(0, 0, canvas.height, canvas.height);
+  // gl.viewport(100, 0, canvas.height, canvas.height);
 
   var primitive = gl.TRIANGLES;
   var offset = 0;
   var count = 6;  // Jumlah verteks yang akan digambar
-  gl.drawArrays(primitive, offset, count);
 
+  var model = glMatrix.mat4.create();
+  var view = glMatrix.mat4.create();
+  glMatrix.mat4.lookAt(view,
+    [0.0, 0.0, 2.0], // di mana posisi kamera (posisi)
+    [0.0, 0.0, -2.0], // ke mana kamera menghadap (vektor)
+    [0.0, 1.0, 0.0] // ke mana arah atas kamera (vektor)
+    );
+  var projection = glMatrix.mat4.create();
+  glMatrix.mat4.perspective(projection, 
+    glMatrix.glMatrix.toRadian(90), // fov dalam radian
+    1.0,  // rasio aspek
+    0.5,  // near
+    10.0  // far
+    );
+  var uModel = gl.getUniformLocation(shaderProgram, 'model');
+  var uView = gl.getUniformLocation(shaderProgram, 'view');
+  var uProjection = gl.getUniformLocation(shaderProgram, 'projection');
+
+  var dz = 0.0;
+
+  function render() {
+    dz += 0.001;
+    // Tambah translasi ke matriks model
+    model = glMatrix.mat4.create();
+    glMatrix.mat4.translate(model, model, [0.0, 0.0, dz]);
+    gl.uniformMatrix4fv(uModel, false, model);
+    gl.uniformMatrix4fv(uView, false, view);
+    gl.uniformMatrix4fv(uProjection, false, projection);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(primitive, offset, count);
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
 }
+
